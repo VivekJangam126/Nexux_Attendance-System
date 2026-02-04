@@ -4,9 +4,9 @@ import { PageType, RoutePaths } from './services/auth';
 
 // Pages
 import Login from './pages/Login';
+import MarkAttendance from './pages/MarkAttendance';
 
 // Placeholder pages (to be implemented)
-const MarkAttendance = () => <div className="p-8">Mark Attendance Page - Coming Soon</div>;
 const Confirmation = () => <div className="p-8">Confirmation Page - Coming Soon</div>;
 const Dashboard = () => <div className="p-8">Dashboard Page - Coming Soon</div>;
 const Settings = () => <div className="p-8">Settings Page - Coming Soon</div>;
