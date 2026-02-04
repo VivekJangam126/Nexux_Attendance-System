@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mark Attendance | Nexon Attendance System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: #f5f7fa;
+        }
+        
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+        }
+        
+        .main-container {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .welcome-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .welcome-card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .welcome-card .date-time {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .time-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            font-family: monospace;
+        }
+        
+        .location-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .location-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 16px;
+        }
+        
+        .status-box {
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .status-box.checking {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+        
+        .status-box.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-box.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-box.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        
+        .status-text {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .status-detail {
+            font-size: 0.85rem;
+            margin-top: 4px;
+            opacity: 0.9;
+        }
+        
+        .location-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.85rem;
+        }
+        
+        .location-details .row {
+            margin-bottom: 4px;
+        }
+        
+        .location-details .label {
+            color: #666;
+        }
+        
+        .location-details .value {
+            font-weight: 600;
+            color: #333;
+            text-align: right;
+        }
+        
+        .btn-mark {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 12px;
+            background: var(--success-color);
+            border: none;
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s;
+        }
+        
+        .btn-mark:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-mark:disabled {
+            background: #9ca3af;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        
+        .btn-disabled-reason {
+            text-align: center;
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        
+        .btn-disabled-reason.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .btn-disabled-reason.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .btn-disabled-reason .icon {
+            margin-right: 6px;
+        }
+        
+        .accuracy-warning {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #92400e;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .accuracy-warning .icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .loading-pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status-box.checking .status-icon {
+            animation: spin 1.5s linear infinite;
+        }
+        
+        .btn-retry {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            background: var(--primary-color);
+            border: none;
+            color: white;
+        }
+        
+        .wifi-notice {
+            text-align: center;
+            padding: 10px;
+            background: #f0f9ff;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #0369a1;
+            margin-top: 16px;
+        }
+        
+        .message-container {
+            margin-bottom: 20px;
+        }
+        
+        .logout-btn {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .logout-btn:hover {
+            color: var(--danger-color);
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .phase-badge {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-light">
+        <div class="container-fluid">
+            <span class="navbar-brand">🏢 Nexon Attendance</span>
+            <a href="#" class="logout-btn" id="logoutBtn">Logout</a>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="main-container">
+        
+        <!-- Message Container -->
+        <div class="message-container" id="messageContainer"></div>
+        
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+            <h2 id="welcomeText">Welcome!</h2>
+            <div class="date-time" id="currentDate"></div>
+            <div class="time-display" id="currentTime">--:--:--</div>
+        </div>
+        
+        <!-- Location Status Card -->
+        <div class="location-card">
+            <h3>📍 Location Verification</h3>
+            
+            <!-- Status Box -->
+            <div class="status-box checking" id="statusBox">
+                <div class="status-icon" id="statusIcon">🔄</div>
+                <div class="status-text" id="statusText">Checking location...</div>
+                <div class="status-detail" id="statusDetail">Please allow location access when prompted</div>
+            </div>
+            
+            <!-- Location Details (hidden initially) -->
+            <div class="location-details" id="locationDetails" style="display: none;">
+                <div class="row">
+                    <div class="col-6 label">Distance from office:</div>
+                    <div class="col-6 value" id="distanceValue">--</div>
+                </div>
+                <div class="row">
+                    <div class="col-6 label">Allowed radius:</div>
+                    <div class="col-6 value" id="radiusValue">--</div>
+                </div>
+                <div class="row">
+                    <div class="col-6 label">GPS accuracy:</div>
+                    <div class="col-6 value" id="accuracyValue">--</div>
+                </div>
+            </div>
+            
+            <!-- Wi-Fi Notice -->
+            <div class="wifi-notice">
+                🔒 Wi-Fi verification will be available in Phase 2
+            </div>
+        </div>
+        
+        <!-- Mark Attendance Button -->
+        <button class="btn btn-mark" id="markAttendanceBtn" disabled>
+            Mark In-Time
+        </button>
+        
+        <!-- Button Disabled Reason -->
+        <div class="btn-disabled-reason" id="disabledReason">
+            <span class="icon">⏳</span>
+            <span id="disabledReasonText">Waiting for location verification...</span>
+        </div>
+        
+        <!-- Retry Button (hidden initially) -->
+        <button class="btn btn-retry" id="retryBtn" style="display: none;">
+            🔄 Retry Location Check
+        </button>
+        
+        <!-- GPS Accuracy Warning (hidden initially) -->
+        <div class="accuracy-warning" id="accuracyWarning" style="display: none;">
+            <span class="icon">⚠️</span>
+            <span id="accuracyWarningText">GPS accuracy is low. Try moving to an open area or waiting a moment for better signal.</span>
+        </div>
+    </div>
+    
+    <!-- Phase indicator -->
+    <div class="phase-badge">Phase 1 Demo</div>
+    
+    <!-- Load JS Modules (order matters) -->
+    <script src="../js/storage.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/location.js"></script>
+    <script src="../js/attendance.js"></script>
+    
+    <script>
+        // Global state
+        var locationVerified = false;
+        var isProcessing = false;
+        
+        // Guard: Employee only page
+        if (!Auth.guardPage(PageType.MARK_ATTENDANCE)) {
+            // guardPage handles redirect, stop execution
+        } else {
+            // Page initialization
+            initMarkAttendancePage();
+        }
+        
+        function initMarkAttendancePage() {
+            // Set up user info
+            const user = Auth.getCurrentUser();
+            if (user) {
+                document.getElementById('welcomeText').textContent = `Welcome, ${user.name}!`;
+            }
+            
+            // Start clock
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // Check if already marked today
+            if (AttendanceService.hasMarkedToday()) {
+                showAlreadyMarked();
+                return;
+            }
+            
+            // Start location check
+            checkLocation();
+            
+            // Bind event handlers
+            document.getElementById('markAttendanceBtn').addEventListener('click', handleMarkAttendance);
+            document.getElementById('retryBtn').addEventListener('click', checkLocation);
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                Auth.logout();
+            });
+        }
+        
+        function updateDateTime() {
+            const now = new Date();
+            
+            // Update date
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', dateOptions);
+            
+            // Update time
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+        
+        async function checkLocation() {
+            // Reset state
+            locationVerified = false;
+            updateButton(false);
+            hideRetryButton();
+            
+            // Show checking status
+            updateStatus('checking', '🔄', 'Verifying your location...', 'Please allow location access when prompted');
+            hideLocationDetails();
+            hideAccuracyWarning();
+            updateDisabledReason('waiting', 'Verifying your location...');
+            
+            // Verify location
+            const result = await LocationService.verifyInsideOffice();
+            
+            // Handle result
+            if (result.status === LocationStatus.INSIDE_OFFICE) {
+                // Success - inside office
+                locationVerified = true;
+                updateStatus(
+                    'success',
+                    '✅',
+                    'You are inside the office!',
+                    `${LocationService.formatDistance(result.distanceMeters)} from office center`
+                );
+                showLocationDetails(result);
+                updateButton(true);
+                hideDisabledReason();
+                
+                // Check GPS accuracy warning
+                if (result.accuracyMeters > result.radiusMeters) {
+                    showAccuracyWarning(result.accuracyMeters, result.radiusMeters);
+                }
+                
+            } else if (result.status === LocationStatus.OUTSIDE_OFFICE) {
+                // Outside office radius
+                updateStatus(
+                    'warning',
+                    '📍',
+                    'You are outside the office area',
+                    `Move closer to mark attendance (${LocationService.formatDistance(result.distanceMeters)} away)`
+                );
+                showLocationDetails(result);
+                showRetryButton();
+                updateDisabledReason('warning', `You are ${LocationService.formatDistance(result.distanceMeters)} away from office`);
+                
+            } else if (result.status === LocationStatus.PERMISSION_DENIED) {
+                // Permission denied
+                updateStatus(
+                    'error',
+                    '🚫',
+                    'Location Permission Denied',
+                    'Please enable location access in your browser settings'
+                );
+                showRetryButton();
+                updateDisabledReason('error', 'Location permission is required to mark attendance');
+                
+            } else if (result.status === LocationStatus.POSITION_UNAVAILABLE) {
+                // GPS unavailable
+                updateStatus(
+                    'error',
+                    '📡',
+                    'Location Unavailable',
+                    'Unable to determine your location. Check GPS settings.'
+                );
+                showRetryButton();
+                updateDisabledReason('error', 'GPS signal not available');
+                
+            } else if (result.status === LocationStatus.TIMEOUT) {
+                // Timeout
+                updateStatus(
+                    'error',
+                    '⏱️',
+                    'Location Request Timed Out',
+                    'Please try again in an area with better GPS signal'
+                );
+                showRetryButton();
+                updateDisabledReason('error', 'Location request timed out');
+                
+            } else {
+                // Other location error
+                updateStatus(
+                    'error',
+                    '❌',
+                    'Location Error',
+                    result.message || LocationService.getStatusMessage(result.status)
+                );
+                showRetryButton();
+                updateDisabledReason('error', 'Unable to verify location');
+            }
+        }
+        
+        function updateStatus(type, icon, text, detail) {
+            const statusBox = document.getElementById('statusBox');
+            statusBox.className = 'status-box ' + type;
+            document.getElementById('statusIcon').textContent = icon;
+            document.getElementById('statusText').textContent = text;
+            document.getElementById('statusDetail').textContent = detail;
+        }
+        
+        function showLocationDetails(result) {
+            const detailsDiv = document.getElementById('locationDetails');
+            detailsDiv.style.display = 'block';
+            
+            document.getElementById('distanceValue').textContent = LocationService.formatDistance(result.distanceMeters);
+            document.getElementById('radiusValue').textContent = result.radiusMeters + ' meters';
+            document.getElementById('accuracyValue').textContent = '±' + Math.round(result.accuracyMeters) + ' meters';
+        }
+        
+        function hideLocationDetails() {
+            document.getElementById('locationDetails').style.display = 'none';
+        }
+        
+        function updateButton(enabled) {
+            const btn = document.getElementById('markAttendanceBtn');
+            btn.disabled = !enabled;
+            btn.textContent = 'Mark In-Time';
+        }
+        
+        function showRetryButton() {
+            document.getElementById('retryBtn').style.display = 'block';
+            document.getElementById('markAttendanceBtn').style.display = 'none';
+        }
+        
+        function hideRetryButton() {
+            document.getElementById('retryBtn').style.display = 'none';
+            document.getElementById('markAttendanceBtn').style.display = 'block';
+        }
+        
+        function updateDisabledReason(type, text) {
+            const reasonDiv = document.getElementById('disabledReason');
+            const reasonText = document.getElementById('disabledReasonText');
+            const iconSpan = reasonDiv.querySelector('.icon');
+            
+            reasonDiv.style.display = 'block';
+            reasonDiv.className = 'btn-disabled-reason';
+            
+            switch (type) {
+                case 'waiting':
+                    iconSpan.textContent = '⏳';
+                    break;
+                case 'warning':
+                    reasonDiv.classList.add('warning');
+                    iconSpan.textContent = '📍';
+                    break;
+                case 'error':
+                    reasonDiv.classList.add('error');
+                    iconSpan.textContent = '⚠️';
+                    break;
+                case 'already':
+                    iconSpan.textContent = '✅';
+                    break;
+                default:
+                    iconSpan.textContent = 'ℹ️';
+            }
+            
+            reasonText.textContent = text;
+        }
+        
+        function hideDisabledReason() {
+            document.getElementById('disabledReason').style.display = 'none';
+        }
+        
+        function showAccuracyWarning(accuracy, radius) {
+            const warningDiv = document.getElementById('accuracyWarning');
+            const warningText = document.getElementById('accuracyWarningText');
+            
+            warningDiv.style.display = 'flex';
+            warningText.textContent = `GPS accuracy (±${Math.round(accuracy)}m) is lower than office radius (${radius}m). Your location may not be precise. Consider waiting for better GPS signal.`;
+        }
+        
+        function hideAccuracyWarning() {
+            document.getElementById('accuracyWarning').style.display = 'none';
+        }
+        
+        async function handleMarkAttendance() {
+            if (!locationVerified || isProcessing) return;
+            
+            isProcessing = true;
+            const btn = document.getElementById('markAttendanceBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Marking...';
+            
+            // Call attendance service
+            const result = await AttendanceService.markInTime();
+            
+            if (result.result === AttendanceResult.SUCCESS) {
+                // Success - redirect to confirmation
+                showMessage(result.message, 'success');
+                setTimeout(() => {
+                    window.location.href = 'confirmation.html';
+                }, 1000);
+                
+            } else if (result.result === AttendanceResult.ALREADY_MARKED) {
+                // Already marked - redirect to confirmation
+                showMessage('Attendance already marked today!', 'info');
+                setTimeout(() => {
+                    window.location.href = 'confirmation.html';
+                }, 1000);
+                
+            } else if (result.result === AttendanceResult.OUTSIDE_OFFICE) {
+                // Location changed - re-check
+                showMessage('Location changed. Please verify again.', 'warning');
+                isProcessing = false;
+                checkLocation();
+                
+            } else {
+                // Other error
+                showMessage(result.message, 'error');
+                isProcessing = false;
+                btn.disabled = false;
+                btn.textContent = 'Mark In-Time';
+            }
+        }
+        
+        function showAlreadyMarked() {
+            const attendance = AttendanceService.getMyTodayAttendance();
+            
+            updateStatus(
+                'success',
+                '✅',
+                'Attendance Already Marked',
+                `Marked at ${new Date(attendance.markedAt).toLocaleTimeString()}`
+            );
+            
+            // Show info message
+            showMessage('You have already marked attendance today. Redirecting...', 'info');
+            
+            // Hide buttons and show reason
+            document.getElementById('markAttendanceBtn').style.display = 'none';
+            document.getElementById('retryBtn').style.display = 'none';
+            updateDisabledReason('already', 'Attendance already marked for today');
+            
+            // Redirect to confirmation after delay
+            setTimeout(() => {
+                window.location.href = 'confirmation.html';
+            }, 2000);
+        }
+        
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            const alertClass = {
+                'success': 'alert-success',
+                'error': 'alert-danger',
+                'warning': 'alert-warning',
+                'info': 'alert-info'
+            }[type] || 'alert-info';
+            
+            container.innerHTML = `
+                <div class="alert ${alertClass}" role="alert">
+                    ${message}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
